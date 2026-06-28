@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.tes.telephotos.data.local.AppDatabase
 import com.tes.telephotos.data.local.MediaDao
+import com.tes.telephotos.data.local.prefs.SettingsManager
 import com.tes.telephotos.data.telegram.TelegramClientWrapper
 import dagger.Module
 import dagger.Provides
@@ -15,6 +16,12 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
+
+    @Provides
+    @Singleton
+    fun provideSettingsManager(@ApplicationContext context: Context): SettingsManager {
+        return SettingsManager(context)
+    }
 
     @Provides
     @Singleton
@@ -34,8 +41,9 @@ object AppModule {
     @Provides
     @Singleton
     fun provideTelegramClientWrapper(
-        @ApplicationContext context: Context
+        @ApplicationContext context: Context,
+        settingsManager: SettingsManager
     ): TelegramClientWrapper {
-        return TelegramClientWrapper(context)
+        return TelegramClientWrapper(context, settingsManager)
     }
 }

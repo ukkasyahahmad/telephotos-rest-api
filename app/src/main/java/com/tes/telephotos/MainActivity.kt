@@ -9,18 +9,21 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.tes.telephotos.ui.screens.auth.AuthScreen
-import com.tes.telephotos.ui.screens.timeline.TimelineScreen
+import com.tes.telephotos.ui.screens.main.MainScreen
+import com.tes.telephotos.ui.screens.settings.SetupScreen
+import com.tes.telephotos.ui.screens.settings.SetupViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -35,7 +38,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     PermissionWrapper {
-                        AppNavigation()
+                        AppNavigationWrapper()
                     }
                 }
             }
@@ -75,6 +78,21 @@ fun PermissionWrapper(content: @Composable () -> Unit) {
 }
 
 @Composable
+fun AppNavigationWrapper(setupViewModel: SetupViewModel = hiltViewModel()) {
+    val isSetupCompleted by setupViewModel.isSetupCompleted.collectAsState()
+
+    if (isSetupCompleted) {
+        AppNavigation()
+    } else {
+        SetupScreen(
+            onSetupCompleted = {
+                // State akan ter-trigger otomatis ke AppNavigation()
+            }
+        )
+    }
+}
+
+@Composable
 fun AppNavigation() {
     val navController = rememberNavController()
 
@@ -82,18 +100,14 @@ fun AppNavigation() {
         composable("auth") {
             AuthScreen(
                 onAuthSuccess = {
-                    navController.navigate("home") {
+                    navController.navigate("main") {
                         popUpTo("auth") { inclusive = true }
                     }
                 }
             )
         }
-        composable("home") {
-            TimelineScreen(
-                onMediaClick = { media ->
-                    // Detail Screen implementation goes here
-                }
-            )
+        composable("main") {
+            MainScreen()
         }
     }
 }
