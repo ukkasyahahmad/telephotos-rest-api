@@ -21,6 +21,7 @@ class TelegramBotWrapper @Inject constructor(
     private val settingsManager: SettingsManager
 ) {
     private val api: TelegramBotApi
+    private val baseUrl = "https://api.telegram.org/"
 
     init {
         val logging = HttpLoggingInterceptor().apply {
@@ -31,7 +32,7 @@ class TelegramBotWrapper @Inject constructor(
             .build()
 
         val retrofit = Retrofit.Builder()
-            .baseUrl("https://api.telegram.org/")
+            .baseUrl(baseUrl)
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -41,15 +42,17 @@ class TelegramBotWrapper @Inject constructor(
 
     suspend fun checkConnection(token: String): Pair<Boolean, String> {
         return try {
-            val response = api.getMe(token)
+            val endpoint = "${baseUrl}bot$token/getMe"
+            val response = api.getMe(endpoint)
+
             if (response.ok && response.result != null) {
-                Pair(true, "Terhubung sebagai: ${response.result.first_name}")
+                Pair(true, "Connected as: ${response.result.first_name}")
             } else {
-                Pair(false, response.description ?: "Token tidak valid")
+                Pair(false, response.description ?: "Invalid Token")
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            Pair(false, "Gagal koneksi: ${e.localizedMessage}")
+            Pair(false, "Connection failed: ${e.localizedMessage}")
         }
     }
 
@@ -63,9 +66,11 @@ class TelegramBotWrapper @Inject constructor(
 
         return try {
             if (isVideo) {
-                api.sendVideo(token, chatId, body)
+                val endpoint = "${baseUrl}bot$token/sendVideo"
+                api.sendVideo(endpoint, chatId, body)
             } else {
-                api.sendPhoto(token, chatId, body)
+                val endpoint = "${baseUrl}bot$token/sendPhoto"
+                api.sendPhoto(endpoint, chatId, body)
             }
         } catch (e: Exception) {
             e.printStackTrace()

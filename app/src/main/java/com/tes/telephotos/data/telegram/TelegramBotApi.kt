@@ -1,28 +1,28 @@
 package com.tes.telephotos.data.telegram
 
 import retrofit2.http.GET
-import retrofit2.http.Path
+import retrofit2.http.Url
 
 interface TelegramBotApi {
 
     @retrofit2.http.Multipart
-    @retrofit2.http.POST("bot{token}/sendPhoto")
+    @retrofit2.http.POST
     suspend fun sendPhoto(
-        @Path(value = "token", encoded = true) token: String,
+        @Url url: String,
         @retrofit2.http.Query("chat_id") chatId: String,
         @retrofit2.http.Part photo: okhttp3.MultipartBody.Part
     ): TelegramResponse
 
     @retrofit2.http.Multipart
-    @retrofit2.http.POST("bot{token}/sendVideo")
+    @retrofit2.http.POST
     suspend fun sendVideo(
-        @Path(value = "token", encoded = true) token: String,
+        @Url url: String,
         @retrofit2.http.Query("chat_id") chatId: String,
         @retrofit2.http.Part video: okhttp3.MultipartBody.Part
     ): TelegramResponse
 
-    @GET("bot{token}/getMe")
-    suspend fun getMe(@Path(value = "token", encoded = true) token: String): TelegramResponse
+    @GET
+    suspend fun getMe(@Url url: String): TelegramResponse
 }
 
 data class TelegramResponse(
@@ -32,9 +32,9 @@ data class TelegramResponse(
 )
 
 data class MessageResult(
-    val id: Long? = null, // Untuk getMe
-    val first_name: String? = null, // Untuk getMe
-    val username: String? = null, // Untuk getMe
+    val id: Long? = null,
+    val first_name: String? = null,
+    val username: String? = null,
 
     val message_id: Long? = null,
     val photo: List<PhotoSize>? = null,
