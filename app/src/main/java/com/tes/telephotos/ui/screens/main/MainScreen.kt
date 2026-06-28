@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Backup
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -12,19 +13,17 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.tes.telephotos.ui.screens.queue.QueueScreen
 import com.tes.telephotos.ui.screens.settings.SettingsScreen
 import com.tes.telephotos.ui.screens.settings.SetupScreen
 import com.tes.telephotos.ui.screens.timeline.TimelineScreen
 
 @Composable
-fun MainScreen(
-    onNavigateToSetup: () -> Unit
-) {
+fun MainScreen() {
     val navController = rememberNavController()
 
     Scaffold(
         bottomBar = {
-            // Sembunyikan bottom bar jika sedang di halaman edit_setup
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             if (navBackStackEntry?.destination?.route != "edit_setup") {
                 BottomNavigationBar(navController = navController)
@@ -42,6 +41,9 @@ fun MainScreen(
                         // Todo: Navigate to Detail
                     }
                 )
+            }
+            composable("queue") {
+                QueueScreen()
             }
             composable("settings") {
                 SettingsScreen(
@@ -66,6 +68,7 @@ fun MainScreen(
 fun BottomNavigationBar(navController: NavHostController) {
     val items = listOf(
         BottomNavItem("Photos", "timeline", Icons.Default.PhotoLibrary),
+        BottomNavItem("Queue", "queue", Icons.Default.Backup),
         BottomNavItem("Settings", "settings", Icons.Default.Settings)
     )
 

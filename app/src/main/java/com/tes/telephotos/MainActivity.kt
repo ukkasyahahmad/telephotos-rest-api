@@ -15,9 +15,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.tes.telephotos.ui.screens.main.MainScreen
@@ -81,28 +78,13 @@ fun AppNavigationWrapper(setupViewModel: SetupViewModel = hiltViewModel()) {
     val isSetupCompleted by setupViewModel.isSetupCompleted.collectAsState()
 
     if (isSetupCompleted) {
-        AppNavigation()
+        MainScreen()
     } else {
         SetupScreen(
             isEditMode = false,
             onSetupCompleted = {
-                // State akan ter-trigger otomatis ke AppNavigation()
+                // State akan ter-trigger otomatis ke MainScreen()
             }
         )
-    }
-}
-
-@Composable
-fun AppNavigation() {
-    val navController = rememberNavController()
-
-    NavHost(navController = navController, startDestination = "main") {
-        composable("main") {
-            MainScreen(
-                onNavigateToSetup = {
-                    // Fitur edit credentials sudah ditangani di dalam MainScreen/Settings
-                }
-            )
-        }
     }
 }
