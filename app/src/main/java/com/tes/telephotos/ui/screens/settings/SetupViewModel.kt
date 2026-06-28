@@ -28,7 +28,7 @@ class SetupViewModel @Inject constructor(
     val connectionStatus = MutableStateFlow<String?>(null)
     val isChecking = MutableStateFlow(false)
 
-    fun checkAndSaveCredentials(botToken: String, chatId: String) {
+    fun checkAndSaveCredentials(botToken: String, chatId: String, isUpdate: Boolean = false) {
         viewModelScope.launch {
             isChecking.value = true
             connectionStatus.value = "Checking connection..."
@@ -38,6 +38,10 @@ class SetupViewModel @Inject constructor(
             if (isSuccess) {
                 connectionStatus.value = message + " - Saving..."
                 settingsManager.saveBotCredentials(botToken, chatId)
+                if (isUpdate) {
+                    // Jika Update, beri pesan spesifik
+                    connectionStatus.value = "Credentials Updated Successfully!"
+                }
             } else {
                 connectionStatus.value = message
             }

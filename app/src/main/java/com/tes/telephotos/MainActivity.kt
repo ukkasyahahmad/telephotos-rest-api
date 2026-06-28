@@ -20,7 +20,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
-import com.tes.telephotos.ui.screens.auth.AuthScreen
 import com.tes.telephotos.ui.screens.main.MainScreen
 import com.tes.telephotos.ui.screens.settings.SetupScreen
 import com.tes.telephotos.ui.screens.settings.SetupViewModel
@@ -38,7 +37,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     PermissionWrapper {
-                        AppNavigation()
+                        AppNavigationWrapper()
                     }
                 }
             }
@@ -78,24 +77,30 @@ fun PermissionWrapper(content: @Composable () -> Unit) {
 }
 
 @Composable
-fun AppNavigation(setupViewModel: SetupViewModel = hiltViewModel()) {
-    val navController = rememberNavController()
+fun AppNavigationWrapper(setupViewModel: SetupViewModel = hiltViewModel()) {
     val isSetupCompleted by setupViewModel.isSetupCompleted.collectAsState()
 
-    NavHost(navController = navController, startDestination = if (isSetupCompleted) "main" else "setup") {
-        composable("setup") {
-            SetupScreen(
-                onSetupCompleted = {
-                    navController.navigate("main") {
-                        popUpTo("setup") { inclusive = true }
-                    }
-                }
-            )
-        }
+    if (isSetupCompleted) {
+        AppNavigation()
+    } else {
+        SetupScreen(
+            isEditMode = false,
+            onSetupCompleted = {
+                // State akan ter-trigger otomatis ke AppNavigation()
+            }
+        )
+    }
+}
+
+@Composable
+fun AppNavigation() {
+    val navController = rememberNavController()
+
+    NavHost(navController = navController, startDestination = "main") {
         composable("main") {
             MainScreen(
                 onNavigateToSetup = {
-                    navController.navigate("setup")
+                    // Fitur edit credentials sudah ditangani di dalam MainScreen/Settings
                 }
             )
         }

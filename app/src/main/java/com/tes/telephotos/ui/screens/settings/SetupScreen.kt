@@ -14,16 +14,24 @@ import androidx.hilt.navigation.compose.hiltViewModel
 @Composable
 fun SetupScreen(
     viewModel: SetupViewModel = hiltViewModel(),
+    isEditMode: Boolean = false,
     onSetupCompleted: () -> Unit
 ) {
     var botToken by remember { mutableStateOf("") }
     var chatId by remember { mutableStateOf("") }
+
     val isSetupCompleted by viewModel.isSetupCompleted.collectAsState()
     val connectionStatus by viewModel.connectionStatus.collectAsState()
     val isChecking by viewModel.isChecking.collectAsState()
 
     LaunchedEffect(isSetupCompleted) {
-        if (isSetupCompleted) {
+        if (isSetupCompleted && !isEditMode) {
+            onSetupCompleted()
+        }
+    }
+
+    LaunchedEffect(connectionStatus) {
+        if (isEditMode && connectionStatus == "Credentials Updated Successfully!") {
             onSetupCompleted()
         }
     }
@@ -36,7 +44,7 @@ fun SetupScreen(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Welcome to TelePhotos",
+            text = if (isEditMode) "Edit Credentials" else "Welcome to TelePhotos",
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(bottom = 16.dp)
         )
@@ -79,13 +87,20 @@ fun SetupScreen(
             Button(
                 onClick = {
                     if (botToken.isNotBlank() && chatId.isNotBlank()) {
-                        viewModel.checkAndSaveCredentials(botToken.trim(), chatId.trim())
+                        viewModel.checkAndSaveCredentials(botToken.trim(), chatId.trim(), isEditMode)
                     }
                 },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = botToken.isNotBlank() && chatId.isNotBlank()
             ) {
-                Text("Check Connection & Save")
+                Text(if (isEditMode) "Update Credentials" else "Check Connection & Save")
+            }
+
+            if (isEditMode) {
+                Spacer(modifier = Modifier.height(8.dp))
+                TextButton(onClick = onSetupCompleted) {
+                    Text("Cancel")
+                }
             }
         }
 

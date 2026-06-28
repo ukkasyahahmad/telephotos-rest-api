@@ -13,6 +13,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.tes.telephotos.ui.screens.settings.SettingsScreen
+import com.tes.telephotos.ui.screens.settings.SetupScreen
 import com.tes.telephotos.ui.screens.timeline.TimelineScreen
 
 @Composable
@@ -23,7 +24,11 @@ fun MainScreen(
 
     Scaffold(
         bottomBar = {
-            BottomNavigationBar(navController = navController)
+            // Sembunyikan bottom bar jika sedang di halaman edit_setup
+            val navBackStackEntry by navController.currentBackStackEntryAsState()
+            if (navBackStackEntry?.destination?.route != "edit_setup") {
+                BottomNavigationBar(navController = navController)
+            }
         }
     ) { innerPadding ->
         NavHost(
@@ -41,7 +46,15 @@ fun MainScreen(
             composable("settings") {
                 SettingsScreen(
                     onEditCredentialsClick = {
-                        onNavigateToSetup()
+                        navController.navigate("edit_setup")
+                    }
+                )
+            }
+            composable("edit_setup") {
+                SetupScreen(
+                    isEditMode = true,
+                    onSetupCompleted = {
+                        navController.popBackStack()
                     }
                 )
             }
