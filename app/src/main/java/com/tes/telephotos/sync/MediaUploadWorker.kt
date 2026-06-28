@@ -1,10 +1,14 @@
 package com.tes.telephotos.sync
 
 import android.content.Context
+import android.content.pm.ServiceInfo
 import android.net.Uri
+import android.os.Build
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
+import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
+import com.tes.telephotos.R
 import com.tes.telephotos.data.local.MediaDao
 import com.tes.telephotos.data.telegram.TelegramBotWrapper
 import com.tes.telephotos.domain.model.SyncState
@@ -15,15 +19,42 @@ import java.io.FileOutputStream
 
 @HiltWorker
 class MediaUploadWorker @AssistedInject constructor(
-    @Assisted appContext: Context,
+    @Assisted private val appContext: Context,
     @Assisted workerParams: WorkerParameters,
     private val mediaDao: MediaDao,
     private val telegramBotWrapper: TelegramBotWrapper
 ) : CoroutineWorker(appContext, workerParams) {
 
+    override suspend fun getForegroundInfo(): ForegroundInfo {
+        val notification = androidx.core.app.NotificationCompat.Builder(
+            appContext,
+            "telephotos_backup_channel"
+        ).apply {
+            setContentTitle("TelePhotos Backup")
+            setContentText("Sedang meng-upload foto/video ke Telegram...")
+            setSmallIcon(R.mipmap.ic_launcher)
+            setOngoing(true)
+            priority = androidx.core.app.NotificationCompat.PRIORITY_LOW
+        }.build()
+
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ForegroundInfo(
+                1001,
+                notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+            )
+        } else {
+            ForegroundInfo(1001, notification)
+        }
+    }
+
     override suspend fun doWork(): Result {
         val pendingMedia = mediaDao.getMediaBySyncState(SyncState.PENDING)
         if (pendingMedia.isEmpty()) return Result.success()
+
+        // Set ini menjadi foreground worker (notification bar)
+        // agar sistem tidak mematikannya walau aplikasi di-close
+        setForeground(getForegroundInfo())
 
         for (media in pendingMedia) {
             val localUriStr = media.localUri ?: continue
@@ -75,7 +106,7 @@ class MediaUploadWorker @AssistedInject constructor(
     private fun uriExists(uriStr: String): Boolean {
         return try {
             val uri = Uri.parse(uriStr)
-            applicationContext.contentResolver.openInputStream(uri) != null
+            appContext.contentResolver.openInputStream(uri) != null
         } catch (e: Exception) {
             false
         }
@@ -83,8 +114,8 @@ class MediaUploadWorker @AssistedInject constructor(
 
     private fun copyToCache(uri: Uri): File? {
         return try {
-            val inputStream = applicationContext.contentResolver.openInputStream(uri) ?: return null
-            val tempFile = File(applicationContext.cacheDir, "temp_upload_${System.currentTimeMillis()}")
+            val inputStream = appContext.contentResolver.openInputStream(uri) ?: return null
+            val tempFile = File(appContext.cacheDir, "temp_upload_${System.currentTimeMillis()}")
             val outputStream = FileOutputStream(tempFile)
             inputStream.copyTo(outputStream)
             inputStream.close()

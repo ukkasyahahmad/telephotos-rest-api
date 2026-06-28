@@ -2,6 +2,9 @@ package com.tes.telephotos.ui.screens.queue
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.Constraints
+import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.tes.telephotos.data.local.MediaDao
@@ -43,8 +46,21 @@ class QueueViewModel @Inject constructor(
         )
 
     fun startBackup() {
-        // Memicu worker secara manual
-        val request = OneTimeWorkRequestBuilder<MediaUploadWorker>().build()
-        workManager.enqueue(request)
+        // Atur Constraints agar hanya berjalan ketika terhubung internet
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
+        // Memicu worker secara manual dengan mode UNIQUE
+        // KEEP: Jika sedang jalan, jangan di-replace. Jika gagal/batal, abaikan.
+        val request = OneTimeWorkRequestBuilder<MediaUploadWorker>()
+            .setConstraints(constraints)
+            .build()
+
+        workManager.enqueueUniqueWork(
+            "MediaUploadWorker_Unique",
+            ExistingWorkPolicy.KEEP,
+            request
+        )
     }
 }

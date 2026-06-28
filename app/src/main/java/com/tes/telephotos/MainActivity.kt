@@ -1,6 +1,9 @@
 package com.tes.telephotos
 
 import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -27,6 +30,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        createNotificationChannel()
         setContent {
             MaterialTheme {
                 Surface(
@@ -40,6 +44,20 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = "TelePhotos Backup"
+            val descriptionText = "Notifikasi saat foto sedang di-upload ke Telegram"
+            val importance = NotificationManager.IMPORTANCE_LOW
+            val channel = NotificationChannel("telephotos_backup_channel", name, importance).apply {
+                description = descriptionText
+            }
+            val notificationManager: NotificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
 }
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -50,6 +68,7 @@ fun PermissionWrapper(content: @Composable () -> Unit) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         permissionsToRequest.add(Manifest.permission.READ_MEDIA_IMAGES)
         permissionsToRequest.add(Manifest.permission.READ_MEDIA_VIDEO)
+        permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
     } else {
         permissionsToRequest.add(Manifest.permission.READ_EXTERNAL_STORAGE)
     }
@@ -64,7 +83,7 @@ fun PermissionWrapper(content: @Composable () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text("Aplikasi membutuhkan izin penyimpanan untuk membaca foto dan video.")
+            Text("Aplikasi membutuhkan izin penyimpanan dan notifikasi.")
             Spacer(modifier = Modifier.height(16.dp))
             Button(onClick = { permissionState.launchMultiplePermissionRequest() }) {
                 Text("Berikan Izin")
