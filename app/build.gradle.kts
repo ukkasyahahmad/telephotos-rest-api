@@ -86,8 +86,8 @@ dependencies {
     implementation(libs.androidx.hilt.work)
     ksp(libs.androidx.hilt.compiler)
 
-    // TDLib
-    implementation(libs.tdlib)
+    // TDLib (tdlibx Kotlin Wrapper)
+    implementation("com.github.tdlibx:td-ktx:1.8.6.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

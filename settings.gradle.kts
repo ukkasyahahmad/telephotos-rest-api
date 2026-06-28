@@ -16,9 +16,9 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        // TDLib community repo from Dzakirana
+        // TDLibx ktx dependency
         maven { url = uri("https://jitpack.io") }
-        maven { url = uri("https://dl.bintray.com/telegram/tdlib") }
+        maven { url = uri("https://repo.maven.apache.org/maven2/") }
     }
 }
 
