@@ -4,11 +4,11 @@ import retrofit2.http.GET
 import retrofit2.http.Path
 
 interface TelegramBotApi {
-    // Endpoints sebelumnya
+
     @retrofit2.http.Multipart
     @retrofit2.http.POST("bot{token}/sendPhoto")
     suspend fun sendPhoto(
-        @Path("token") token: String,
+        @Path(value = "token", encoded = true) token: String,
         @retrofit2.http.Query("chat_id") chatId: String,
         @retrofit2.http.Part photo: okhttp3.MultipartBody.Part
     ): TelegramResponse
@@ -16,14 +16,13 @@ interface TelegramBotApi {
     @retrofit2.http.Multipart
     @retrofit2.http.POST("bot{token}/sendVideo")
     suspend fun sendVideo(
-        @Path("token") token: String,
+        @Path(value = "token", encoded = true) token: String,
         @retrofit2.http.Query("chat_id") chatId: String,
         @retrofit2.http.Part video: okhttp3.MultipartBody.Part
     ): TelegramResponse
 
-    // Endpoint baru untuk cek koneksi (getMe)
     @GET("bot{token}/getMe")
-    suspend fun getMe(@Path("token") token: String): TelegramResponse
+    suspend fun getMe(@Path(value = "token", encoded = true) token: String): TelegramResponse
 }
 
 data class TelegramResponse(
