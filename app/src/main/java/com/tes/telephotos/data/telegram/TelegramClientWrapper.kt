@@ -9,12 +9,15 @@ import org.drinkless.tdlib.TdApi
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 @Singleton
 class TelegramClientWrapper @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
-    private var client: Client? = null
+    var client: Client? = null
+        private set
 
     private val _authState = MutableStateFlow<TdApi.AuthorizationState?>(null)
     val authState: StateFlow<TdApi.AuthorizationState?> = _authState
@@ -66,5 +69,22 @@ class TelegramClientWrapper @Inject constructor(
 
     fun logOut() {
         client?.send(TdApi.LogOut()) { _ -> }
+    }
+
+    suspend fun getSavedMessagesChatId(): Long? = suspendCoroutine { continuation ->
+        client?.send(TdApi.GetChats(TdApi.ChatListMain(), 100)) { result ->
+            if (result is TdApi.Chats) {
+                // Untuk kesederhanaan, kita bisa mencari chat dengan tipe Private dan ID sesuai user sendiri
+                client?.send(TdApi.GetMe()) { meResult ->
+                    if (meResult is TdApi.User) {
+                        continuation.resume(meResult.id.toLong()) // Di Telegram, Saved Messages ID = User ID diri sendiri
+                    } else {
+                        continuation.resume(null)
+                    }
+                }
+            } else {
+                continuation.resume(null)
+            }
+        } ?: continuation.resume(null)
     }
 }
