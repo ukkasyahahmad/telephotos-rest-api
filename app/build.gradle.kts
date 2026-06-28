@@ -61,6 +61,9 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
 
+    // Accompanist Permissions
+    implementation(libs.accompanist.permissions)
+
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
@@ -80,7 +83,7 @@ dependencies {
     implementation(libs.androidx.hilt.work)
     ksp(libs.androidx.hilt.compiler)
 
-    // TDLib (Add prebuilt maven repo or AAR, for now we assume it exists in a central repo or we will add custom repo)
+    // TDLib
     implementation(libs.tdlib)
 
     testImplementation(libs.junit)
