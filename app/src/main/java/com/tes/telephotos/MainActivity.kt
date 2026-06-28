@@ -13,6 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.tes.telephotos.ui.screens.auth.AuthScreen
+import com.tes.telephotos.ui.screens.timeline.TimelineScreen
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -48,8 +49,11 @@ fun AppNavigation() {
             )
         }
         composable("home") {
-            // Placeholder for the Timeline UI
-            androidx.compose.material3.Text("Timeline / Home Screen (Authorized)")
+            TimelineScreen(
+                onMediaClick = { media ->
+                    // Akan diimplementasikan ke halaman Detail di Tahap 5+
+                }
+            )
         }
     }
 }
