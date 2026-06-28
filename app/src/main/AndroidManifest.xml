@@ -44,6 +44,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!--
+          Override service milik WorkManager untuk menambahkan foregroundServiceType=dataSync.
+          Ini WAJIB di Android 14+ agar ForegroundInfo dengan tipe DATA_SYNC tidak crash.
+        -->
+        <service
+            android:name="androidx.work.impl.foreground.SystemForegroundService"
+            android:foregroundServiceType="dataSync"
+            tools:node="merge" />
     </application>
 
 </manifest>
