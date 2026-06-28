@@ -35,6 +35,9 @@ class TimelineViewModel @Inject constructor(
 
     val freeUpSpaceResult = MutableStateFlow<String?>(null)
 
+    // Status upload per-media (jika diklik)
+    val mediaUploadStatus = MutableStateFlow<String?>(null)
+
     init {
         syncLocalMedia()
     }
@@ -54,5 +57,24 @@ class TimelineViewModel @Inject constructor(
 
     fun clearFreeUpSpaceResult() {
         freeUpSpaceResult.value = null
+    }
+
+    fun clearMediaUploadStatus() {
+        mediaUploadStatus.value = null
+    }
+
+    fun handleMediaClick(media: MediaEntity) {
+        // Karena halaman detail belum selesai, untuk saat ini kita beri feedback Toast
+        when (media.syncState) {
+            com.tes.telephotos.domain.model.SyncState.PENDING -> {
+                mediaUploadStatus.value = "Foto ini masuk dalam antrean (PENDING) dan akan di-upload di background."
+            }
+            com.tes.telephotos.domain.model.SyncState.UPLOADING -> {
+                mediaUploadStatus.value = "Foto ini sedang proses UPLOADING ke Telegram."
+            }
+            com.tes.telephotos.domain.model.SyncState.SYNCED -> {
+                mediaUploadStatus.value = "Foto ini SUDAH SYNCED di Telegram! (FileID: ${media.telegramFileId?.take(10)}...)"
+            }
+        }
     }
 }

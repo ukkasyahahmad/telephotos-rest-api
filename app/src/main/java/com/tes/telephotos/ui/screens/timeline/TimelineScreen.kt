@@ -36,12 +36,20 @@ fun TimelineScreen(
 ) {
     val groupedMedia by viewModel.groupedMedia.collectAsState()
     val freeUpSpaceResult by viewModel.freeUpSpaceResult.collectAsState()
+    val uploadStatus by viewModel.mediaUploadStatus.collectAsState()
     val context = LocalContext.current
 
     LaunchedEffect(freeUpSpaceResult) {
         freeUpSpaceResult?.let {
             Toast.makeText(context, it, Toast.LENGTH_LONG).show()
             viewModel.clearFreeUpSpaceResult()
+        }
+    }
+
+    LaunchedEffect(uploadStatus) {
+        uploadStatus?.let {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+            viewModel.clearMediaUploadStatus()
         }
     }
 
@@ -83,7 +91,15 @@ fun TimelineScreen(
 
                 // Media Grid
                 items(mediaList, key = { it.id }) { media ->
-                    MediaGridItem(media = media, onClick = { onMediaClick(media) })
+                    MediaGridItem(
+                        media = media,
+                        onClick = {
+                            // Call internal handler for Toast feedback
+                            viewModel.handleMediaClick(media)
+                            // Call external handler if needed later
+                            onMediaClick(media)
+                        }
+                    )
                 }
             }
         }
@@ -108,8 +124,6 @@ fun MediaGridItem(media: MediaEntity, onClick: () -> Unit) {
             )
         } else {
             // Jika local file sudah dihapus (Free up space)
-            // Nantinya harus fetch thumbnail dari Telegram File ID.
-            // Sementara kita tampilkan placeholder gray
             Box(
                 modifier = Modifier
                     .fillMaxSize()

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tes.telephotos.data.local.MediaDao
 import com.tes.telephotos.data.local.prefs.SettingsManager
+import com.tes.telephotos.data.telegram.TelegramBotWrapper
 import com.tes.telephotos.domain.model.SyncState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +18,8 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val settingsManager: SettingsManager,
-    private val mediaDao: MediaDao
+    private val mediaDao: MediaDao,
+    private val botWrapper: TelegramBotWrapper
 ) : ViewModel() {
 
     val botToken: StateFlow<String> = settingsManager.botToken
@@ -32,6 +34,9 @@ class SettingsViewModel @Inject constructor(
     val syncedMediaCount = MutableStateFlow(0)
     val isUploading = MutableStateFlow(false)
 
+    val connectionTestResult = MutableStateFlow<String?>(null)
+    val isTestingConnection = MutableStateFlow(false)
+
     init {
         viewModelScope.launch {
             mediaDao.getAllMedia().collect { mediaList ->
@@ -40,5 +45,29 @@ class SettingsViewModel @Inject constructor(
                 isUploading.value = mediaList.any { it.syncState == SyncState.UPLOADING }
             }
         }
+    }
+
+    fun testConnection() {
+        viewModelScope.launch {
+            isTestingConnection.value = true
+            val token = botToken.value
+            if (token.isBlank()) {
+                connectionTestResult.value = "Token kosong. Silakan setup ulang."
+                isTestingConnection.value = false
+                return@launch
+            }
+
+            val (isSuccess, message) = botWrapper.checkConnection(token)
+            if (isSuccess) {
+                connectionTestResult.value = "Sukses: $message"
+            } else {
+                connectionTestResult.value = "Gagal: $message"
+            }
+            isTestingConnection.value = false
+        }
+    }
+
+    fun clearConnectionTestResult() {
+        connectionTestResult.value = null
     }
 }

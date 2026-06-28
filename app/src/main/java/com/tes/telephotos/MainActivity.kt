@@ -38,7 +38,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     PermissionWrapper {
-                        AppNavigationWrapper()
+                        AppNavigation()
                     }
                 }
             }
@@ -78,36 +78,26 @@ fun PermissionWrapper(content: @Composable () -> Unit) {
 }
 
 @Composable
-fun AppNavigationWrapper(setupViewModel: SetupViewModel = hiltViewModel()) {
+fun AppNavigation(setupViewModel: SetupViewModel = hiltViewModel()) {
+    val navController = rememberNavController()
     val isSetupCompleted by setupViewModel.isSetupCompleted.collectAsState()
 
-    if (isSetupCompleted) {
-        AppNavigation()
-    } else {
-        SetupScreen(
-            onSetupCompleted = {
-                // State akan ter-trigger otomatis ke AppNavigation()
-            }
-        )
-    }
-}
-
-@Composable
-fun AppNavigation() {
-    val navController = rememberNavController()
-
-    NavHost(navController = navController, startDestination = "auth") {
-        composable("auth") {
-            AuthScreen(
-                onAuthSuccess = {
+    NavHost(navController = navController, startDestination = if (isSetupCompleted) "main" else "setup") {
+        composable("setup") {
+            SetupScreen(
+                onSetupCompleted = {
                     navController.navigate("main") {
-                        popUpTo("auth") { inclusive = true }
+                        popUpTo("setup") { inclusive = true }
                     }
                 }
             )
         }
         composable("main") {
-            MainScreen()
+            MainScreen(
+                onNavigateToSetup = {
+                    navController.navigate("setup")
+                }
+            )
         }
     }
 }

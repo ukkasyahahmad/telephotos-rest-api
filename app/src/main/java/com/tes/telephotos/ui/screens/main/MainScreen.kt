@@ -16,7 +16,9 @@ import com.tes.telephotos.ui.screens.settings.SettingsScreen
 import com.tes.telephotos.ui.screens.timeline.TimelineScreen
 
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    onNavigateToSetup: () -> Unit
+) {
     val navController = rememberNavController()
 
     Scaffold(
@@ -37,7 +39,11 @@ fun MainScreen() {
                 )
             }
             composable("settings") {
-                SettingsScreen()
+                SettingsScreen(
+                    onEditCredentialsClick = {
+                        onNavigateToSetup()
+                    }
+                )
             }
         }
     }
