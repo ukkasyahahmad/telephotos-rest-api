@@ -1,5 +1,6 @@
 package com.tes.telephotos.ui.screens.queue
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -68,6 +69,16 @@ fun QueueScreen(
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         Text("${syncedMedia.size} synced / ${pendingMedia.size + syncedMedia.size} total")
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = { viewModel.startBackup() },
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = pendingMedia.isNotEmpty()
+                        ) {
+                            Icon(Icons.Default.CloudUpload, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(if (isUploading) "Retrigger Backup" else "Start Backup Now")
+                        }
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))

@@ -2,6 +2,7 @@ package com.tes.telephotos.di
 
 import android.content.Context
 import androidx.room.Room
+import androidx.work.WorkManager
 import com.tes.telephotos.data.local.AppDatabase
 import com.tes.telephotos.data.local.MediaDao
 import com.tes.telephotos.data.local.prefs.SettingsManager
@@ -45,5 +46,11 @@ object AppModule {
         settingsManager: SettingsManager
     ): TelegramBotWrapper {
         return TelegramBotWrapper(context, settingsManager)
+    }
+
+    @Provides
+    @Singleton
+    fun provideWorkManager(@ApplicationContext context: Context): WorkManager {
+        return WorkManager.getInstance(context)
     }
 }
