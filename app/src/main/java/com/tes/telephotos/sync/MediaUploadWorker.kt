@@ -15,11 +15,11 @@ import java.io.FileOutputStream
 
 @HiltWorker
 class MediaUploadWorker @AssistedInject constructor(
-    @Assisted private val context: Context,
+    @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
     private val mediaDao: MediaDao,
     private val telegramBotWrapper: TelegramBotWrapper
-) : CoroutineWorker(context, workerParams) {
+) : CoroutineWorker(appContext, workerParams) {
 
     override suspend fun doWork(): Result {
         val pendingMedia = mediaDao.getMediaBySyncState(SyncState.PENDING)
@@ -27,11 +27,14 @@ class MediaUploadWorker @AssistedInject constructor(
 
         for (media in pendingMedia) {
             val localUriStr = media.localUri ?: continue
-            val uri = Uri.parse(localUriStr)
 
+            // Cek apakah file fisiknya masih ada
+            if (!uriExists(localUriStr)) continue
+
+            val uri = Uri.parse(localUriStr)
             val tempFile = copyToCache(uri) ?: continue
 
-            // Bot API limit is 50MB
+            // Batasi ukuran (Bot API = 50MB)
             if (tempFile.length() > 50 * 1024 * 1024) {
                 tempFile.delete()
                 continue
@@ -44,20 +47,22 @@ class MediaUploadWorker @AssistedInject constructor(
 
             if (response != null && response.ok && response.result != null) {
                 var fileId: String? = null
+                val result = response.result
                 if (isVideo) {
-                    fileId = response.result.video?.file_id
+                    fileId = result.video?.file_id
                 } else {
-                    fileId = response.result.photo?.lastOrNull()?.file_id
+                    fileId = result.photo?.lastOrNull()?.file_id
                 }
 
                 mediaDao.updateMedia(
                     media.copy(
                         syncState = SyncState.SYNCED,
-                        telegramMessageId = response.result.message_id,
+                        telegramMessageId = result.message_id,
                         telegramFileId = fileId
                     )
                 )
             } else {
+                // Jika gagal, kembalikan ke PENDING agar bisa diulang nanti
                 mediaDao.updateMedia(media.copy(syncState = SyncState.PENDING))
             }
 
@@ -67,10 +72,19 @@ class MediaUploadWorker @AssistedInject constructor(
         return Result.success()
     }
 
+    private fun uriExists(uriStr: String): Boolean {
+        return try {
+            val uri = Uri.parse(uriStr)
+            applicationContext.contentResolver.openInputStream(uri) != null
+        } catch (e: Exception) {
+            false
+        }
+    }
+
     private fun copyToCache(uri: Uri): File? {
         return try {
-            val inputStream = context.contentResolver.openInputStream(uri) ?: return null
-            val tempFile = File(context.cacheDir, "temp_upload_${System.currentTimeMillis()}")
+            val inputStream = applicationContext.contentResolver.openInputStream(uri) ?: return null
+            val tempFile = File(applicationContext.cacheDir, "temp_upload_${System.currentTimeMillis()}")
             val outputStream = FileOutputStream(tempFile)
             inputStream.copyTo(outputStream)
             inputStream.close()
