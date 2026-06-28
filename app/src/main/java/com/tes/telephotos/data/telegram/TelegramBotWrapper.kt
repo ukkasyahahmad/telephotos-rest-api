@@ -43,13 +43,13 @@ class TelegramBotWrapper @Inject constructor(
         return try {
             val response = api.getMe(token)
             if (response.ok && response.result != null) {
-                Pair(true, "Connected as: ${response.result.first_name}")
+                Pair(true, "Terhubung sebagai: ${response.result.first_name}")
             } else {
-                Pair(false, response.description ?: "Invalid Token")
+                Pair(false, response.description ?: "Token tidak valid")
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            Pair(false, "Connection failed: ${e.localizedMessage}")
+            Pair(false, "Gagal koneksi: ${e.localizedMessage}")
         }
     }
 

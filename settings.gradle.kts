@@ -16,9 +16,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        // TDLibx ktx dependency
         maven { url = uri("https://jitpack.io") }
-        maven { url = uri("https://repo.maven.apache.org/maven2/") }
     }
 }
 

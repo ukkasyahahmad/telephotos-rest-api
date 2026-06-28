@@ -5,7 +5,7 @@ import androidx.room.Room
 import com.tes.telephotos.data.local.AppDatabase
 import com.tes.telephotos.data.local.MediaDao
 import com.tes.telephotos.data.local.prefs.SettingsManager
-import com.tes.telephotos.data.telegram.TelegramClientWrapper
+import com.tes.telephotos.data.telegram.TelegramBotWrapper
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -40,10 +40,10 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideTelegramClientWrapper(
+    fun provideTelegramBotWrapper(
         @ApplicationContext context: Context,
         settingsManager: SettingsManager
-    ): TelegramClientWrapper {
-        return TelegramClientWrapper(context, settingsManager)
+    ): TelegramBotWrapper {
+        return TelegramBotWrapper(context, settingsManager)
     }
 }

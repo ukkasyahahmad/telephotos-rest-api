@@ -5,7 +5,6 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -22,8 +21,8 @@ class SettingsManager @Inject constructor(
 ) {
     companion object {
         val SETUP_COMPLETED = booleanPreferencesKey("setup_completed")
-        val API_ID = intPreferencesKey("api_id")
-        val API_HASH = stringPreferencesKey("api_hash")
+        val BOT_TOKEN = stringPreferencesKey("bot_token")
+        val CHAT_ID = stringPreferencesKey("chat_id")
     }
 
     val isSetupCompleted: Flow<Boolean> = context.dataStore.data
@@ -31,20 +30,20 @@ class SettingsManager @Inject constructor(
             preferences[SETUP_COMPLETED] ?: false
         }
 
-    val apiId: Flow<Int?> = context.dataStore.data
+    val botToken: Flow<String?> = context.dataStore.data
         .map { preferences ->
-            preferences[API_ID]
+            preferences[BOT_TOKEN]
         }
 
-    val apiHash: Flow<String?> = context.dataStore.data
+    val chatId: Flow<String?> = context.dataStore.data
         .map { preferences ->
-            preferences[API_HASH]
+            preferences[CHAT_ID]
         }
 
-    suspend fun saveApiCredentials(id: Int, hash: String) {
+    suspend fun saveBotCredentials(token: String, chat: String) {
         context.dataStore.edit { preferences ->
-            preferences[API_ID] = id
-            preferences[API_HASH] = hash
+            preferences[BOT_TOKEN] = token
+            preferences[CHAT_ID] = chat
             preferences[SETUP_COMPLETED] = true
         }
     }
