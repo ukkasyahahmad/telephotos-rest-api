@@ -16,8 +16,9 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        // TDLib community repo or jitpack can be added here later if needed
+        // TDLib community repo from Dzakirana
         maven { url = uri("https://jitpack.io") }
+        maven { url = uri("https://dl.bintray.com/telegram/tdlib") }
     }
 }
 

@@ -52,8 +52,8 @@ androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx"
 androidx-hilt-work = { group = "androidx.hilt", name = "hilt-work", version = "1.2.0" }
 androidx-hilt-compiler = { group = "androidx.hilt", name = "hilt-compiler", version = "1.2.0" }
 
-# TDLib (Using unofficial wrapper)
-tdlib = { group = "core.telegram.org.td", name = "tdlib", version.ref = "tdlib" }
+# TDLib wrapper from github/core-telegram-td
+tdlib = { group = "com.github.Dzakirana", name = "tdlib", version = "1.8.44" }
 
 # Testing
 junit = { group = "junit", name = "junit", version.ref = "junit" }

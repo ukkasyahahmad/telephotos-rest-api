@@ -81,7 +81,7 @@ dependencies {
     ksp(libs.androidx.hilt.compiler)
 
     // TDLib (Add prebuilt maven repo or AAR, for now we assume it exists in a central repo or we will add custom repo)
-    // implementation(libs.tdlib)
+    implementation(libs.tdlib)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
