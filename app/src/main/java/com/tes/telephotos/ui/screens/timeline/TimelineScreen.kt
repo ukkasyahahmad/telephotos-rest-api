@@ -1,5 +1,6 @@
 package com.tes.telephotos.ui.screens.timeline
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -10,14 +11,17 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
@@ -31,6 +35,15 @@ fun TimelineScreen(
     onMediaClick: (MediaEntity) -> Unit
 ) {
     val groupedMedia by viewModel.groupedMedia.collectAsState()
+    val freeUpSpaceResult by viewModel.freeUpSpaceResult.collectAsState()
+    val context = LocalContext.current
+
+    LaunchedEffect(freeUpSpaceResult) {
+        freeUpSpaceResult?.let {
+            Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+            viewModel.clearFreeUpSpaceResult()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -39,7 +52,15 @@ fun TimelineScreen(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
                     titleContentColor = MaterialTheme.colorScheme.onSurface
-                )
+                ),
+                actions = {
+                    IconButton(onClick = { viewModel.freeUpSpace() }) {
+                        Icon(
+                            imageVector = Icons.Default.DeleteSweep,
+                            contentDescription = "Free up space"
+                        )
+                    }
+                }
             )
         }
     ) { paddingValues ->
@@ -78,12 +99,23 @@ fun MediaGridItem(media: MediaEntity, onClick: () -> Unit) {
             .clickable { onClick() }
     ) {
         // Thumbnail Image
-        AsyncImage(
-            model = media.localUri,
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
-        )
+        if (media.localUri != null) {
+            AsyncImage(
+                model = media.localUri,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+        } else {
+            // Jika local file sudah dihapus (Free up space)
+            // Nantinya harus fetch thumbnail dari Telegram File ID.
+            // Sementara kita tampilkan placeholder gray
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.LightGray)
+            )
+        }
 
         // Sync Status Indicator
         Box(

@@ -4,7 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tes.telephotos.data.local.MediaEntity
 import com.tes.telephotos.data.repository.MediaRepository
+import com.tes.telephotos.domain.usecase.FreeUpSpaceUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -14,7 +16,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TimelineViewModel @Inject constructor(
-    private val repository: MediaRepository
+    private val repository: MediaRepository,
+    private val freeUpSpaceUseCase: FreeUpSpaceUseCase
 ) : ViewModel() {
 
     // Kumpulan media berdasarkan tanggal (Timestamp ke String via utils)
@@ -30,6 +33,8 @@ class TimelineViewModel @Inject constructor(
             initialValue = emptyMap()
         )
 
+    val freeUpSpaceResult = MutableStateFlow<String?>(null)
+
     init {
         syncLocalMedia()
     }
@@ -38,5 +43,16 @@ class TimelineViewModel @Inject constructor(
         viewModelScope.launch {
             repository.syncLocalMedia()
         }
+    }
+
+    fun freeUpSpace() {
+        viewModelScope.launch {
+            val deletedCount = freeUpSpaceUseCase()
+            freeUpSpaceResult.value = "Berhasil mengosongkan $deletedCount item dari penyimpanan lokal."
+        }
+    }
+
+    fun clearFreeUpSpaceResult() {
+        freeUpSpaceResult.value = null
     }
 }
