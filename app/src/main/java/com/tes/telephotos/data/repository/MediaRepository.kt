@@ -20,6 +20,28 @@ class MediaRepository @Inject constructor(
 
     val allMedia: Flow<List<MediaEntity>> = mediaDao.getAllMedia()
 
+    val favoriteMediaIds = kotlinx.coroutines.flow.MutableStateFlow<Set<Long>>(emptySet())
+
+    fun toggleFavoriteMultiple(mediaIds: List<Long>): Boolean {
+        val currentFavorites = favoriteMediaIds.value.toMutableSet()
+        var addedCount = 0
+        mediaIds.forEach { id ->
+            if (!currentFavorites.contains(id)) {
+                currentFavorites.add(id)
+                addedCount++
+            }
+        }
+        
+        val isAdded = addedCount > 0
+        // Jika semua yang dipilih sudah ada di favorit, berarti kita akan toggle (hapus) mereka
+        if (addedCount == 0) {
+            currentFavorites.removeAll(mediaIds.toSet())
+        }
+        
+        favoriteMediaIds.value = currentFavorites
+        return isAdded
+    }
+
     suspend fun syncLocalMedia() = withContext(Dispatchers.IO) {
         val mediaList = mutableListOf<MediaEntity>()
 
@@ -83,5 +105,9 @@ class MediaRepository @Inject constructor(
         if (mediaList.isNotEmpty()) {
             mediaDao.insertMedia(mediaList)
         }
+    }
+
+    suspend fun updateMedia(media: MediaEntity) = withContext(Dispatchers.IO) {
+        mediaDao.updateMedia(media)
     }
 }

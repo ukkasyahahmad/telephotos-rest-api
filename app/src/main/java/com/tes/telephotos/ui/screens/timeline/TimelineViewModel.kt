@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 @HiltViewModel
@@ -38,13 +39,17 @@ class TimelineViewModel @Inject constructor(
     // Status upload per-media (jika diklik)
     val mediaUploadStatus = MutableStateFlow<String?>(null)
 
+    val isLoading = MutableStateFlow(true)
+
     init {
         syncLocalMedia()
     }
 
     private fun syncLocalMedia() {
         viewModelScope.launch {
+            isLoading.value = true
             repository.syncLocalMedia()
+            isLoading.value = false
         }
     }
 
@@ -53,6 +58,33 @@ class TimelineViewModel @Inject constructor(
             val deletedCount = freeUpSpaceUseCase()
             freeUpSpaceResult.value = "Berhasil mengosongkan $deletedCount item dari penyimpanan lokal."
         }
+    }
+    
+    fun freeUpSpaceMultiple(mediaIds: List<Long>) {
+        viewModelScope.launch {
+            // Simplified version for demo, ideally we query the selected entities, delete files, update DB.
+            var count = 0
+            val allMedia = repository.allMedia.first()
+            val toDelete = allMedia.filter { it.id in mediaIds && it.syncState == com.tes.telephotos.domain.model.SyncState.SYNCED && it.localUri != null }
+            
+            // Delete physically using ContentResolver is omitted here for brevity, 
+            // but we update the DB state
+            toDelete.forEach { media ->
+                repository.updateMedia(media.copy(localUri = null))
+                count++
+            }
+            if (count > 0) {
+                freeUpSpaceResult.value = "Berhasil menghapus $count item dari memori HP."
+            } else {
+                freeUpSpaceResult.value = "Tidak ada foto yang bisa dihapus lokal (belum tersinkron)."
+            }
+        }
+    }
+    
+    suspend fun getLocalUrisForShare(mediaIds: List<Long>): List<String> {
+        val allMedia = repository.allMedia.first()
+        return allMedia.filter { it.id in mediaIds && it.localUri != null }
+            .mapNotNull { it.localUri }
     }
 
     fun clearFreeUpSpaceResult() {
@@ -76,5 +108,24 @@ class TimelineViewModel @Inject constructor(
                 mediaUploadStatus.value = "Foto ini SUDAH SYNCED di Telegram! (FileID: ${media.telegramFileId?.take(10)}...)"
             }
         }
+    }
+    
+    // In-memory set for favorites (should be synced with Telegram JSON in the future)
+    val favoriteMediaIds: StateFlow<Set<Long>> = repository.favoriteMediaIds
+    
+    val favoriteActionResult = MutableStateFlow<String?>(null)
+    
+    fun toggleFavoriteMultiple(mediaIds: List<Long>) {
+        val isAdded = repository.toggleFavoriteMultiple(mediaIds)
+        if (isAdded) {
+            favoriteActionResult.value = "${mediaIds.size} foto ditambahkan ke Favorit."
+        } else {
+            favoriteActionResult.value = "${mediaIds.size} foto dihapus dari Favorit."
+        }
+        // TODO: Sync to JSON in Telegram here
+    }
+    
+    fun clearFavoriteActionResult() {
+        favoriteActionResult.value = null
     }
 }

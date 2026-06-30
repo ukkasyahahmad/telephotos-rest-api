@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Backup
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -42,6 +43,14 @@ fun MainScreen() {
                     }
                 )
             }
+            composable("favorites") {
+                TimelineScreen(
+                    isFavoritesOnly = true,
+                    onMediaClick = { media ->
+                        // Todo: Navigate to Detail
+                    }
+                )
+            }
             composable("queue") {
                 QueueScreen()
             }
@@ -68,6 +77,7 @@ fun MainScreen() {
 fun BottomNavigationBar(navController: NavHostController) {
     val items = listOf(
         BottomNavItem("Photos", "timeline", Icons.Default.PhotoLibrary),
+        BottomNavItem("Favorites", "favorites", Icons.Default.Star),
         BottomNavItem("Queue", "queue", Icons.Default.Backup),
         BottomNavItem("Settings", "settings", Icons.Default.Settings)
     )
