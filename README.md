@@ -3,7 +3,7 @@
 ![Android Minimum SDK](https://img.shields.io/badge/Min_SDK-24_(_Android_7.0+)-green)
 ![Android Target SDK](https://img.shields.io/badge/Target_SDK-34_(_Android_14)-blue)
 
-[**📥 Download APK Terbaru (tes-app.apk)**](./tes-app.apk)
+[**📥 Download APK Terbaru (tes-app.apk)**](https://github.com/vrcorp/TelePhotos/releases/download/Rilis/tes-app.apk)
 
 TelePhotos adalah aplikasi galeri cerdas berbasis Android yang menjadikan Telegram sebagai *cloud storage* (penyimpanan awan) tak terbatas. Aplikasi ini memungkinkan pengguna untuk membackup foto dan video ke Telegram secara otomatis, serta mengelola ruang penyimpanan lokal dengan aman. Uniknya, semua *state* dan metadata (seperti struktur Album) tidak menggunakan database eksternal, melainkan menggunakan file JSON yang diunggah dan di-*pin* langsung di Telegram.
 
