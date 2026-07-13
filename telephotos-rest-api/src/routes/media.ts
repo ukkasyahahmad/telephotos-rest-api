@@ -56,13 +56,24 @@ media.get("/:id/file", async (c) => {
     return c.json({ ok: false, error: "cannot get file from telegram" }, 502)
   }
 
-  const dl = await downloadFile(fileRes.result.file_path)
-  if (!dl.ok) return c.json({ ok: false, error: "download failed" }, 502)
+  const range = c.req.header("range")
+  const dl = await downloadFile(fileRes.result.file_path, range)
+  if (!dl.ok && dl.status !== 206) return c.json({ ok: false, error: "download failed" }, 502)
 
-  return c.newResponse(dl.body, 200, {
+  const resHeaders: Record<string, string> = {
     "Content-Type": row.mimeType,
     "Cache-Control": "public, max-age=86400",
-  })
+    "Accept-Ranges": "bytes",
+  }
+
+  if (dl.headers.get("content-range")) {
+    resHeaders["Content-Range"] = dl.headers.get("content-range")!
+  }
+  if (dl.headers.get("content-length")) {
+    resHeaders["Content-Length"] = dl.headers.get("content-length")!
+  }
+
+  return c.newResponse(dl.body, dl.status, resHeaders)
 })
 
 media.delete("/:id", (c) => {

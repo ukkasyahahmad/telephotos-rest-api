@@ -84,6 +84,8 @@ export async function unpinChatMessage(messageId: number) {
   })
 }
 
-export async function downloadFile(filePath: string): Promise<Response> {
-  return fetch(`${BOT_API}/file/bot${config.botToken}/${filePath}`)
+export async function downloadFile(filePath: string, range?: string): Promise<Response> {
+  const headers: Record<string, string> = {}
+  if (range) headers["Range"] = range
+  return fetch(`${BOT_API}/file/bot${config.botToken}/${filePath}`, { headers })
 }

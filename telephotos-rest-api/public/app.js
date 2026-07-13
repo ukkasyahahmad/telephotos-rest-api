@@ -171,6 +171,7 @@ function renderGallery(container) {
         </div>
         <div class="flex gap-1 mt-2 opacity-0 group-hover:opacity-100 transition">
           <button class="dl-btn text-xs px-2 py-0.5 bg-blue-600/50 rounded" data-id="${m.id}">⬇</button>
+          <button class="copy-btn text-xs px-2 py-0.5 bg-gray-600/50 rounded" data-url="${fileUrl}">🔗</button>
           <button class="del-btn text-xs px-2 py-0.5 bg-red-600/50 rounded" data-id="${m.id}">✕</button>
         </div>
       </div>
@@ -184,6 +185,20 @@ function renderGallery(container) {
     btn.onclick = async () => {
       await fetch(`${API}/api/media/${btn.dataset.id}`, { method: "DELETE" })
       loadGallery()
+    }
+  )
+  grid.querySelectorAll(".copy-btn").forEach(btn =>
+    btn.onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(btn.dataset.url)
+        const orig = btn.textContent
+        btn.textContent = "✓"
+        setTimeout(() => btn.textContent = orig, 1500)
+      } catch {
+        const orig = btn.textContent
+        btn.textContent = "✗"
+        setTimeout(() => btn.textContent = orig, 1500)
+      }
     }
   )
 }
