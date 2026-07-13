@@ -4,15 +4,14 @@ import { config } from "./config"
 import routes from "./routes"
 import { readFileSync } from "fs"
 
-const appJs = readFileSync("./public/app.js", "utf-8")
-
 const app = new Hono()
 
 app.use("/*", cors())
 
-app.get("/app.js", (c) =>
-  c.newResponse(appJs, 200, { "Content-Type": "application/javascript" })
-)
+app.get("/app.js", (c) => {
+  const appJs = readFileSync("./public/app.js", "utf-8")
+  return c.newResponse(appJs, 200, { "Content-Type": "application/javascript" })
+})
 
 app.get("/", (c) => c.html(`
   <!DOCTYPE html>

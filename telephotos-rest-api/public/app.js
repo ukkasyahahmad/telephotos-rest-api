@@ -189,8 +189,9 @@ function renderGallery(container) {
   )
   grid.querySelectorAll(".copy-btn").forEach(btn =>
     btn.onclick = async () => {
+      const url = window.location.origin + btn.dataset.url
       try {
-        await navigator.clipboard.writeText(btn.dataset.url)
+        await navigator.clipboard.writeText(url)
         const orig = btn.textContent
         btn.textContent = "✓"
         setTimeout(() => btn.textContent = orig, 1500)

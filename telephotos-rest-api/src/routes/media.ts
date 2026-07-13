@@ -57,8 +57,11 @@ media.get("/:id/file", async (c) => {
   }
 
   const range = c.req.header("range")
-  const dl = await downloadFile(fileRes.result.file_path, range)
-  if (!dl.ok && dl.status !== 206) return c.json({ ok: false, error: "download failed" }, 502)
+  let dl = await downloadFile(fileRes.result.file_path, range)
+  if (!dl.ok && dl.status !== 206) {
+    dl = await downloadFile(fileRes.result.file_path)
+  }
+  if (!dl.ok) return c.json({ ok: false, error: "download failed" }, 502)
 
   const resHeaders: Record<string, string> = {
     "Content-Type": row.mimeType,
