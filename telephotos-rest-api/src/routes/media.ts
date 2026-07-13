@@ -7,6 +7,7 @@ import {
   sendDocument,
   getFile,
   downloadFile,
+  fileUrl,
 } from "../lib/telegram"
 import type { MediaRecord } from "../types"
 
@@ -77,6 +78,20 @@ media.get("/:id/file", async (c) => {
   }
 
   return c.newResponse(dl.body, dl.status, resHeaders)
+})
+
+media.get("/:id/redirect", async (c) => {
+  const id = Number(c.req.param("id"))
+  const row = db.select().from(schema.media).where(eq(schema.media.id, id)).get()
+  if (!row) return c.json({ ok: false, error: "not found" }, 404)
+  if (!row.telegramFileId) return c.json({ ok: false, error: "no telegram file id" }, 404)
+
+  const fileRes = await getFile(row.telegramFileId)
+  if (!fileRes.ok || !fileRes.result?.file_path) {
+    return c.json({ ok: false, error: "cannot get file from telegram" }, 502)
+  }
+
+  return c.redirect(fileUrl(fileRes.result.file_path), 302)
 })
 
 media.delete("/:id", (c) => {

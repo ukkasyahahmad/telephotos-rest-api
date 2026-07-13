@@ -171,6 +171,7 @@ function renderGallery(container) {
         </div>
         <div class="flex gap-1 mt-2 opacity-0 group-hover:opacity-100 transition">
           <button class="dl-btn text-xs px-2 py-0.5 bg-blue-600/50 rounded" data-id="${m.id}">⬇</button>
+          <button class="direct-btn text-xs px-2 py-0.5 bg-green-600/50 rounded" data-id="${m.id}">↗</button>
           <button class="copy-btn text-xs px-2 py-0.5 bg-gray-600/50 rounded" data-url="${fileUrl}">🔗</button>
           <button class="del-btn text-xs px-2 py-0.5 bg-red-600/50 rounded" data-id="${m.id}">✕</button>
         </div>
@@ -186,6 +187,9 @@ function renderGallery(container) {
       await fetch(`${API}/api/media/${btn.dataset.id}`, { method: "DELETE" })
       loadGallery()
     }
+  )
+  grid.querySelectorAll(".direct-btn").forEach(btn =>
+    btn.onclick = () => window.open(`${API}/api/media/${btn.dataset.id}/redirect`, "_blank")
   )
   grid.querySelectorAll(".copy-btn").forEach(btn =>
     btn.onclick = async () => {
